@@ -117,6 +117,10 @@ return function module() {
 
         sliderLength = parseInt(div.style("width"), 10);
 
+         d3.select(window).on('resize', function() {
+          sliderLength = parseInt(div.style("width"), 10);
+        });
+
       } else { // Vertical
 
         div.on("click", onClickVertical);
@@ -139,6 +143,10 @@ return function module() {
         }
 
         sliderLength = parseInt(div.style("height"), 10);
+
+         d3.select(window).on('resize', function() {
+          sliderLength = parseInt(div.style("height"), 10);
+        });
 
       }
 
@@ -358,13 +366,21 @@ return function module() {
   // Getter/setter functions
   slider.min = function(_) {
     if (!arguments.length) return min;
+
     min = _;
+
+    scale = d3.scaleLinear().domain([min, max]);
+
     return slider;
   };
 
   slider.max = function(_) {
     if (!arguments.length) return max;
+
     max = _;
+
+    scale = d3.scaleLinear().domain([min, max]);
+
     return slider;
   };
 

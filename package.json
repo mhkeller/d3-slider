@@ -16,11 +16,6 @@
     "url": "https://github.com/turban/d3.slider/issues"
   },
   "homepage": "https://github.com/turban/d3.slider",
-  "browserify": {
-    "transform": [
-      "cssify"
-    ]
-  },
   "dependencies": {
     "d3": "^4.4.3",
     "browserify": "~4.1.5",
