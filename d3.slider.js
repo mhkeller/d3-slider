@@ -46,10 +46,13 @@ return function module() {
       handle1,
       handle2 = null,
       divRange,
-      sliderLength;
+      sliderLength,
+      uid = 0;
+
 
   function slider(selection) {
     selection.each(function() {
+      uid++
 
       // Create scale if not defined by user
       if (!scale) {
@@ -117,7 +120,7 @@ return function module() {
 
         sliderLength = parseInt(div.style("width"), 10);
 
-         d3.select(window).on('resize', function() {
+        d3.select(window).on('resize.d3-slider' + uid, function() {
           sliderLength = parseInt(div.style("width"), 10);
         });
 
