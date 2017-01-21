@@ -11,7 +11,7 @@
   } else if (typeof exports === 'object') {
     if (process.browser) {
       // Browserify. Import css too using cssify.
-      require('./d3.slider.css');
+      // require('../../css/modules/d3.slider.css');
     }
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
@@ -53,7 +53,7 @@ return function module() {
 
       // Create scale if not defined by user
       if (!scale) {
-        scale = d3.scale.linear().domain([min, max]);
+        scale = d3.scaleLinear().domain([min, max]);
       }
 
       // Start value
@@ -61,10 +61,10 @@ return function module() {
 
       // DIV container
       var div = d3.select(this).classed("d3-slider d3-slider-" + orientation, true);
-      
-      var drag = d3.behavior.drag();
-      drag.on('dragend', function () {
-        dispatch.slideend(d3.event, value);
+
+      var drag = d3.drag();
+      drag.on('end', function () {
+        dispatch.call('slideend', d3.event, value);
       })
 
       // Slider handle
@@ -92,12 +92,12 @@ return function module() {
           .on("click", stopPropagation)
           .call(drag);
       }
-      
+
       // Horizontal slider
       if (orientation === "horizontal") {
 
         div.on("click", onClickHorizontal);
-        
+
         if (toType(value) == "array" && value.length == 2) {
           divRange = d3.select(this).append('div').classed("d3-slider-range", true);
 
@@ -114,7 +114,7 @@ return function module() {
           handle1.style("left", formatPercent(scale(value)));
           drag.on("drag", onDragHorizontal);
         }
-        
+
         sliderLength = parseInt(div.style("width"), 10);
 
       } else { // Vertical
@@ -137,11 +137,11 @@ return function module() {
           handle1.style("bottom", formatPercent(scale(value)));
           drag.on("drag", onDragVertical);
         }
-        
+
         sliderLength = parseInt(div.style("height"), 10);
 
       }
-      
+
       if (axis) {
         createAxis(div);
       }
@@ -199,7 +199,7 @@ return function module() {
           if (axis.orient() === "left") {
             svg.style("left", -margin + "px");
             g.attr("transform", "translate(" + margin + "," + margin + ")");
-          } else { // right          
+          } else { // right
             g.attr("transform", "translate(" + 0 + "," + margin + ")");
           }
 
@@ -212,7 +212,7 @@ return function module() {
       function onClickHorizontal() {
         if (toType(value) != "array") {
           var pos = Math.max(0, Math.min(sliderLength, d3.event.offsetX || d3.event.layerX));
-          moveHandle(scale.invert ? 
+          moveHandle(scale.invert ?
                       stepValue(scale.invert(pos / sliderLength))
                     : nearestTick(pos / sliderLength));
         }
@@ -221,7 +221,7 @@ return function module() {
       function onClickVertical() {
         if (toType(value) != "array") {
           var pos = sliderLength - Math.max(0, Math.min(sliderLength, d3.event.offsetY || d3.event.layerY));
-          moveHandle(scale.invert ? 
+          moveHandle(scale.invert ?
                       stepValue(scale.invert(pos / sliderLength))
                     : nearestTick(pos / sliderLength));
         }
@@ -234,7 +234,7 @@ return function module() {
           active = 2;
         }
         var pos = Math.max(0, Math.min(sliderLength, d3.event.x));
-        moveHandle(scale.invert ? 
+        moveHandle(scale.invert ?
                     stepValue(scale.invert(pos / sliderLength))
                   : nearestTick(pos / sliderLength));
       }
@@ -246,7 +246,7 @@ return function module() {
           active = 2;
         }
         var pos = sliderLength - Math.max(0, Math.min(sliderLength, d3.event.y))
-        moveHandle(scale.invert ? 
+        moveHandle(scale.invert ?
                     stepValue(scale.invert(pos / sliderLength))
                   : nearestTick(pos / sliderLength));
       }
@@ -270,11 +270,11 @@ return function module() {
       if (toType(value) == "array" && value.length == 2) {
         value[ active - 1 ] = newValue;
         if (d3.event) {
-          dispatch.slide(d3.event, value );
+          dispatch.call('slide', d3.event, value );
         };
       } else {
         if (d3.event) {
-          dispatch.slide(d3.event.sourceEvent || d3.event, value = newValue);
+          dispatch.call('slide', d3.event.sourceEvent || d3.event, value = newValue);
         };
       }
 
@@ -292,12 +292,12 @@ return function module() {
           handle1.style(position, newPos);
         }
       } else {
-        
+
         var width = 100 - parseFloat(newPos);
         var top = 100 - parseFloat(newPos);
 
         (position === "left") ? divRange.style("right", width + "%") : divRange.style("top", top + "%");
-        
+
         if (animate) {
           handle2.transition()
               .styleTween(position, function() { return d3.interpolate(oldPos, newPos); })
@@ -400,9 +400,7 @@ return function module() {
 
   slider.value = function(_) {
     if (!arguments.length) return value;
-    if (value) {
-      moveHandle(stepValue(_));
-    };
+    moveHandle(stepValue(_));
     value = _;
     return slider;
   };
@@ -419,7 +417,10 @@ return function module() {
     return slider;
   };
 
-  d3.rebind(slider, dispatch, "on");
+  slider.on = function() {
+    var value = dispatch.on.apply(dispatch, arguments);
+    return value === dispatch ? slider : value;
+  }
 
   return slider;
 
